@@ -88,7 +88,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"name\": \"Super Hero\",\r\n    \"phone\": \"99999\"\r\n}",
+					"raw": "{\r\n    \"name\": \"Super Hero\",\r\n    \"phone\": \"1111\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -96,7 +96,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8080/api/addressbooks/Office/contacts",
+					"raw": "http://localhost:8080/api/v1/addressbooks/Office/contacts",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -104,6 +104,7 @@
 					"port": "8080",
 					"path": [
 						"api",
+						"v1",
 						"addressbooks",
 						"Office",
 						"contacts"
@@ -114,6 +115,38 @@
 		},
 		{
 			"name": "AC 4.3 update contact",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"oldContact\": {\r\n        \"name\": \"Saikiran R\",\r\n        \"phone\": \"0434099991\"\r\n    },\r\n    \"newContact\": {\r\n        \"name\": \"RM Saikiran\",\r\n        \"phone\": \"0434099888\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/addressbooks/Office/contacts",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"addressbooks",
+						"Office",
+						"contacts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AC 4.3 update",
 			"request": {
 				"method": "POST",
 				"header": [],
@@ -151,7 +184,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"name\": \"John Doe\",\r\n    \"phone\": \"1234567890\"\r\n}",
+					"raw": "{\r\n    \"name\": \"Saikiran R\",\r\n    \"phone\": \"0434099991\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -159,7 +192,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8080/api/addressbooks/Personal/contacts",
+					"raw": "http://localhost:8080/api/v1/addressbooks/Office/contacts",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -167,8 +200,9 @@
 					"port": "8080",
 					"path": [
 						"api",
+						"v1",
 						"addressbooks",
-						"Personal",
+						"Office",
 						"contacts"
 					]
 				}
@@ -180,17 +214,8 @@
 			"request": {
 				"method": "DELETE",
 				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"name\": \"John Doe\",\r\n    \"phone\": \"1234567890\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
 				"url": {
-					"raw": "http://localhost:8080/api/addressbooks/Personal",
+					"raw": "http://localhost:8080/api/v1/addressbooks/Personal",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -198,6 +223,7 @@
 					"port": "8080",
 					"path": [
 						"api",
+						"v1",
 						"addressbooks",
 						"Personal"
 					]
@@ -206,12 +232,12 @@
 			"response": []
 		},
 		{
-			"name": "4 Get all contacts",
+			"name": "4 Get all contacts in an addressbook",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/api/addressbooks/Personal/contacts",
+					"raw": "http://localhost:8080/api/v1/addressbooks/Office/contacts",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -219,8 +245,9 @@
 					"port": "8080",
 					"path": [
 						"api",
+						"v1",
 						"addressbooks",
-						"Personal",
+						"Office",
 						"contacts"
 					]
 				}
@@ -243,6 +270,29 @@
 						"api",
 						"v1",
 						"addressbooks"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AC5 unque contacts",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v1/addressbooks/contacts/unique",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"addressbooks",
+						"contacts",
+						"unique"
 					]
 				}
 			},
