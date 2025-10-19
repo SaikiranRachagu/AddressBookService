@@ -10,6 +10,7 @@ import com.reece.service.AddressBookService;
 
 import org.junit.jupiter.api.Test;
 
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -76,7 +77,7 @@ class AddressBookControllerTest {
         String bookName = "Friends";
         Contact contact = new Contact("Kiran", "0001112224");
 
-        doNothing().when(addressBookService).removeContact(bookName, contact);
+        Mockito.when(addressBookService.removeContact(bookName, contact)).thenReturn(true);
 
         mockMvc.perform(delete("/api/v1/addressbooks/{bookName}/contacts", bookName)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -132,7 +133,8 @@ class AddressBookControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Contact updated successfully in addressbook : Friends"));
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Contact updated successfully in addressbook: Friends"));
     }
 
     @Test

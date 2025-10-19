@@ -30,18 +30,17 @@ public class AddressBook {
         this.contacts = contacts;
     }
 
-    public void addContact(Contact contact) {
+    public Boolean addContact(Contact contact) {
         contacts.add(contact);
+        return true;
     }
 
-    public void removeContact(Contact contact) {
-        contacts.remove(contact);
-    }
-    /*public void updateContact(Contact contact) {
-        if (contacts.contains(contact.getName())) {
+    public boolean removeContact(Contact contact) {
+        if (contacts.contains(contact)) {
             contacts.remove(contact);
-            contacts.add(contact);
+            return true;
         }
-    }*/
+        return false;
+    }
 }
 

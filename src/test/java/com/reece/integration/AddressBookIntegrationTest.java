@@ -71,7 +71,8 @@ public class AddressBookIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Contact updated successfully in addressbook : Friends"));
+                .andExpect(jsonPath("$.message").value("Contact updated successfully in addressbook: Friends"));
+
 
         mockMvc.perform(get("/api/v1/addressbooks/Friends/contacts"))
                 .andExpect(status().isOk())

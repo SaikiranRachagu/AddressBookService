@@ -9,7 +9,11 @@ import com.reece.service.AddressBookService;
 
 import jakarta.validation.Valid;
 
+import jakarta.validation.constraints.NotBlank;
+
 import org.springframework.beans.factory.annotation.Autowired;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,11 +37,16 @@ public class AddressBookController {
 
     //  AC2:  Users should be able to remove existing contact entries
     @DeleteMapping("/{addressbookName}/contacts")
-    public ResponseEntity<ApiResponse<Void>> removeContact(@PathVariable String addressbookName,
+    public ResponseEntity<ApiResponse<Void>> removeContact(@PathVariable @NotBlank String addressbookName,
                                                            @Valid @RequestBody Contact contact) {
-        addressBookService.removeContact(addressbookName, contact);
-        return ResponseEntity.ok(new ApiResponse<>(true,
-                "Contact removed successfully from addressbook : " + addressbookName, null));
+        if (addressBookService.removeContact(addressbookName, contact)) {
+            return ResponseEntity.ok(new ApiResponse<>(true,
+                    "Contact removed successfully from addressbook : " + addressbookName, null));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    new ApiResponse<>(false, "Address book or contact not found: " + addressbookName,
+                            null));
+        }
     }
 
     //  AC3:   Users should be able to print all contacts in an Addressbook
@@ -59,11 +68,16 @@ public class AddressBookController {
 
     //  AC4:   Users should be able to maintain multiple addressbooks : updating the books
     @PutMapping("/{addressbookName}/contacts")
-    public String updateContact(@PathVariable String addressbookName, @RequestBody UpdateContact updateContact) {
+    public ResponseEntity<ApiResponse<Void>> updateContact(@PathVariable String addressbookName,
+                                                           @RequestBody UpdateContact updateContact) {
         boolean updated = addressBookService.updateContact(addressbookName, updateContact.getOldContact(),
                 updateContact.getNewContact());
-        return updated ? "Contact updated successfully in addressbook : " + addressbookName
-                : " Old contact not found in the addressbook.";
+
+        String message = updated
+                ? "Contact updated successfully in addressbook: " + addressbookName
+                : "Old contact not found in the addressbook.";
+        return ResponseEntity.ok(new ApiResponse<>(true, message, null));
+
     }
 
     //  AC4:   Users should be able to maintain multiple addressbooks : creating addressbook

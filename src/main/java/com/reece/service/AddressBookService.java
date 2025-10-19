@@ -38,11 +38,12 @@ public class AddressBookService {
         addressBookMap.computeIfAbsent(bookName, AddressBook::new).addContact(contact);
     }
 
-    public void removeContact(String bookName, Contact contact) {
+    public boolean removeContact(String bookName, Contact contact) {
         AddressBook addressBook = addressBookMap.get(bookName);
-        if (addressBook != null) {
-            addressBook.removeContact(contact);
+        if (addressBook == null) {
+            return false;
         }
+        return addressBook.removeContact(contact);
     }
 
     public boolean updateContact(String addressBookName, Contact oldContact, Contact newContact) {
