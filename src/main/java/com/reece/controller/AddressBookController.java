@@ -1,11 +1,10 @@
 package com.reece.controller;
 
-import com.reece.exception.AddressBookAPIException;
 import com.reece.model.AddressBook;
 import com.reece.model.ApiResponse;
 import com.reece.model.Contact;
 import com.reece.model.UpdateContact;
-import com.reece.service.AddressBookService;
+import com.reece.service.UserAddressBookService;
 
 import jakarta.validation.Valid;
 
@@ -17,29 +16,38 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/api/v1/addressbooks")
+@RequestMapping("/api/v1/")
 public class AddressBookController {
-    @Autowired
-    private AddressBookService addressBookService;
 
-    //   AC1: Users should be able to add new contact entries
-    @PostMapping("/{addressbookName}/contacts")
-    public ResponseEntity<ApiResponse<Void>> addContact(@PathVariable String addressbookName,
-                                                        @Valid @RequestBody Contact contact) {
-        addressBookService.addContact(addressbookName, contact);
-        return ResponseEntity.ok(new ApiResponse<>(true, "Contact added successfully under addressbook "
-                + addressbookName, null));
+    @Autowired
+    private UserAddressBookService userAddressBookService;
+
+    //AC1
+    @PostMapping("users/{userId}/addressbooks/{addressbookName}/contacts")
+    public ResponseEntity<ApiResponse<Void>> addContactToUser(@PathVariable String addressbookName,
+                                                              @Valid @RequestBody Contact contact,
+                                                              @PathVariable @NotBlank String userId) {
+        Boolean isContactAdded = userAddressBookService.addContactToAddressBook(userId, addressbookName, contact);
+        if (isContactAdded) {
+            return ResponseEntity.ok(new ApiResponse<>(true,
+                    "Contact added successfully under addressbook: " + addressbookName, null));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    new ApiResponse<>(false,
+                            "Address book or contact not found: " + addressbookName, null));
+        }
     }
 
-    //  AC2:  Users should be able to remove existing contact entries
-    @DeleteMapping("/{addressbookName}/contacts")
-    public ResponseEntity<ApiResponse<Void>> removeContact(@PathVariable @NotBlank String addressbookName,
-                                                           @Valid @RequestBody Contact contact) {
-        if (addressBookService.removeContact(addressbookName, contact)) {
+    //AC2
+    @DeleteMapping("/users/{userId}/addressbooks/{addressbookName}/contacts")
+    public ResponseEntity<ApiResponse<Void>> removeContactForUser(@PathVariable @NotBlank String userId,
+                                                                  @PathVariable @NotBlank String addressbookName,
+                                                                  @Valid @RequestBody Contact contact) {
+        if (userAddressBookService.removeContactForUser(userId, addressbookName, contact)) {
             return ResponseEntity.ok(new ApiResponse<>(true,
                     "Contact removed successfully from addressbook : " + addressbookName, null));
         } else {
@@ -49,28 +57,34 @@ public class AddressBookController {
         }
     }
 
-    //  AC3:   Users should be able to print all contacts in an Addressbook
-    @GetMapping("/{addressbookName}/contacts")
-    public ResponseEntity<ApiResponse<Set<Contact>>> getContactsFromAddressbook(@PathVariable String addressbookName) {
-        AddressBook book = addressBookService.getAddressBook(addressbookName);
-        if (book == null) {
-            throw new AddressBookAPIException("addressbook '" + addressbookName + "' not found");
+    //AC3
+    @GetMapping("/users/{userId}/addressbooks/{addressbookName}/contacts")
+    public ResponseEntity<ApiResponse<Set<Contact>>> getAllAddressBooksForUser(@PathVariable @NotBlank String userId,
+                                                                               @PathVariable String addressbookName) {
+        Set<Contact> result = userAddressBookService.getContacts(userId, addressbookName);
+        if (result.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    new ApiResponse<>(false, "Address book or contact not found: " + addressbookName,
+                            null));
+        } else {
+            return ResponseEntity.ok(new ApiResponse<>(true, "All contacts retrieved under addressbook: "
+                    + addressbookName, result));
         }
-        return ResponseEntity.ok(new ApiResponse<>(true, "Contacts fetched", book.getContacts()));
     }
 
     // AC4:  Users should be able to maintain multiple addressbooks
-    @GetMapping
-    public ResponseEntity<ApiResponse<Collection<AddressBook>>> getAllAddressBooks() {
+    @GetMapping("users/{userId}")
+    public ResponseEntity<ApiResponse<Map<String, AddressBook>>> getAllAddressBooks(@PathVariable @NotBlank String userId) {
         return ResponseEntity.ok(new ApiResponse<>(true, "All Addressbooks retrieved",
-                addressBookService.getAllBooks()));
+                userAddressBookService.getAllBooks(userId)));
     }
 
     //  AC4:   Users should be able to maintain multiple addressbooks : updating the books
-    @PutMapping("/{addressbookName}/contacts")
-    public ResponseEntity<ApiResponse<Void>> updateContact(@PathVariable String addressbookName,
+    @PutMapping("/users/{userId}/addressbooks/{addressbookName}/contacts")
+    public ResponseEntity<ApiResponse<Void>> updateContact(@PathVariable @NotBlank String userId,
+                                                           @PathVariable String addressbookName,
                                                            @RequestBody UpdateContact updateContact) {
-        boolean updated = addressBookService.updateContact(addressbookName, updateContact.getOldContact(),
+        boolean updated = userAddressBookService.updateContactForUser(userId, addressbookName, updateContact.getOldContact(),
                 updateContact.getNewContact());
 
         String message = updated
@@ -80,31 +94,35 @@ public class AddressBookController {
 
     }
 
-    //  AC4:   Users should be able to maintain multiple addressbooks : creating addressbook
-    @PostMapping("/{addressbookName}")
-    public ResponseEntity<ApiResponse<AddressBook>> createAddressBook(@PathVariable String addressbookName) {
-        AddressBook book = addressBookService.createAddressBook(addressbookName);
-        if (book == null) {
-            return ResponseEntity.ok(new ApiResponse<>(true, "Addressbook " + book
-                    + " already exists or addressbookName is null.", book));
-        }
-        return ResponseEntity.ok(new ApiResponse<>(true, addressbookName + " Addressbook created", book));
-
-    }
-
-    //  AC4:   Users should be able to maintain multiple addressbooks
-    @DeleteMapping("/{addressbook}")
-    public ResponseEntity<ApiResponse<Void>> removeAddressbooks(@PathVariable String addressbook) {
-        addressBookService.removeAddressBooks(addressbook);
+    //  AC4:   Users should be able to maintain multiple addressbooks : delete addbook
+    @DeleteMapping("/users/{userId}/addressbooks/{addressbook}")
+    public ResponseEntity<ApiResponse<Void>> removeAddressbooks(@PathVariable @NotBlank String userId,
+                                                                @PathVariable String addressbook) {
+        userAddressBookService.removeAddressBookForUser(userId, addressbook);
         return ResponseEntity.ok(new ApiResponse<>(true, "Addressbook " + addressbook
                 + " removed successfully", null));
     }
 
-    //    AC5:  Users should be able to print a unique set of all contacts across multiple addressbooks
-    @GetMapping("/contacts/unique")
-    public ResponseEntity<ApiResponse<Set<Contact>>> getUniqueContacts() {
+    //AC4: create addbook
+    @PostMapping("users/{userId}/addressbooks/{addressbookName}")
+    public ResponseEntity<ApiResponse<Void>> createAddressBookForUser(@PathVariable String addressbookName,
+                                                                      @PathVariable @NotBlank String userId) {
+        boolean isAddressBookCreated = userAddressBookService.createAddressBookForUser(userId, addressbookName);
+        if (isAddressBookCreated) {
+            return ResponseEntity.ok(new ApiResponse<>(true,
+                    "Addressbook created successfully: " + addressbookName, null));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    new ApiResponse<>(false,
+                            "user not found: " + userId, null));
+        }
+    }
+
+    //AC5
+    @GetMapping("/users/{userId}/addressbooks/contacts/unique")
+    public ResponseEntity<ApiResponse<Set<Contact>>> getUniqueContactsForUser(@PathVariable @NotBlank String userId) {
         return ResponseEntity.ok(new ApiResponse<>(true, "Unique contacts retrieved from all addressbooks.",
-                addressBookService.getUniqueContactsAcrossAllBooks()));
+                userAddressBookService.getUniqueContactsAcrossAllBooks(userId)));
     }
 }
 

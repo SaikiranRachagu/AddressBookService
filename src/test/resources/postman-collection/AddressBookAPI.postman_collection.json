@@ -6,12 +6,12 @@
 	},
 	"item": [
 		{
-			"name": "1 Add addressbook Personal",
+			"name": "1 User Add addressbook Personal",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/api/v1/addressbooks/Personal",
+					"raw": "http://localhost:8080/api/v1/users/user1/addressbooks/Personal",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -20,6 +20,8 @@
 					"path": [
 						"api",
 						"v1",
+						"users",
+						"user1",
 						"addressbooks",
 						"Personal"
 					]
@@ -28,12 +30,12 @@
 			"response": []
 		},
 		{
-			"name": "1.1 Add addressbook Office",
+			"name": "1 User Add addressbook Office",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/api/v1/addressbooks/Office",
+					"raw": "http://localhost:8080/api/v1/users/user1/addressbooks/Office",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -42,6 +44,8 @@
 					"path": [
 						"api",
 						"v1",
+						"users",
+						"user1",
 						"addressbooks",
 						"Office"
 					]
@@ -50,13 +54,13 @@
 			"response": []
 		},
 		{
-			"name": "2 add contact under Personal",
+			"name": "2 User add contact under Personal",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"name\": \"John Doe2\",\r\n    \"phone\": \"0434010795\"\r\n}",
+					"raw": "{\r\n    \"name\": \"John Doe6\",\r\n    \"phone\": \"0434010795\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -64,7 +68,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8080/api/v1/addressbooks/Personal/contacts",
+					"raw": "http://localhost:8080/api/v1/users/user1/addressbooks/Personal/contacts",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -73,6 +77,8 @@
 					"path": [
 						"api",
 						"v1",
+						"users",
+						"user1",
 						"addressbooks",
 						"Personal",
 						"contacts"
@@ -82,13 +88,13 @@
 			"response": []
 		},
 		{
-			"name": "2.1 add contact under Office",
+			"name": "2 User add contact under Office",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"name\": \"Super Hero\",\r\n    \"phone\": \"1111\"\r\n}",
+					"raw": "{\r\n    \"name\": \"hello1\",\r\n    \"phone\": \"0434010795\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -96,7 +102,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8080/api/v1/addressbooks/Office/contacts",
+					"raw": "http://localhost:8080/api/v1/users/user1/addressbooks/Office/contacts",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -105,6 +111,8 @@
 					"path": [
 						"api",
 						"v1",
+						"users",
+						"user1",
 						"addressbooks",
 						"Office",
 						"contacts"
@@ -128,7 +136,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8080/api/v1/addressbooks/Office/contacts",
+					"raw": "http://localhost:8080/api/v1/users/user1/addressbooks/Personal/contacts",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -137,8 +145,10 @@
 					"path": [
 						"api",
 						"v1",
+						"users",
+						"user1",
 						"addressbooks",
-						"Office",
+						"Personal",
 						"contacts"
 					]
 				}
@@ -146,13 +156,13 @@
 			"response": []
 		},
 		{
-			"name": "AC 4.3 update",
+			"name": "User Delete contact",
 			"request": {
-				"method": "POST",
+				"method": "DELETE",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"oldContact\": {\r\n    \"name\": \"John\",\r\n    \"phoneNumber\": \"123\"\r\n  },\r\n  \"newContact\": {\r\n    \"name\": \"John Smith\",\r\n    \"phoneNumber\": \"456\"\r\n  }\r\n}\r\n",
+					"raw": "{\r\n    \"name\": \"hello1\",\r\n    \"phone\": \"0434010795\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -160,7 +170,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8080/api/v1/addressbooks/Office/contacts",
+					"raw": "http://localhost:8080/api/v1/users/user1/addressbooks/Office/contacts",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -169,6 +179,8 @@
 					"path": [
 						"api",
 						"v1",
+						"users",
+						"user1",
 						"addressbooks",
 						"Office",
 						"contacts"
@@ -178,13 +190,13 @@
 			"response": []
 		},
 		{
-			"name": "3 delete contact",
+			"name": "User Delete Addressbook",
 			"request": {
 				"method": "DELETE",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"name\": \"Saikiran R\",\r\n    \"phone\": \"0434099991\"\r\n}",
+					"raw": "{\r\n    \"name\": \"hello1\",\r\n    \"phone\": \"0434010795\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -192,7 +204,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8080/api/v1/addressbooks/Office/contacts",
+					"raw": "http://localhost:8080/api/v1/users/user1/addressbooks/Personal",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -201,29 +213,8 @@
 					"path": [
 						"api",
 						"v1",
-						"addressbooks",
-						"Office",
-						"contacts"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "3 delete addressbooks",
-			"request": {
-				"method": "DELETE",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8080/api/v1/addressbooks/Personal",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"api",
-						"v1",
+						"users",
+						"user1",
 						"addressbooks",
 						"Personal"
 					]
@@ -232,12 +223,12 @@
 			"response": []
 		},
 		{
-			"name": "4 Get all contacts in an addressbook",
+			"name": "4 User Get all contacts in Personal",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/api/v1/addressbooks/Office/contacts",
+					"raw": "http://localhost:8080/api/v1/users/user1/addressbooks/Personal/contacts",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -246,6 +237,33 @@
 					"path": [
 						"api",
 						"v1",
+						"users",
+						"user1",
+						"addressbooks",
+						"Personal",
+						"contacts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "4 User Get all contacts in Office",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v1/users/user1/addressbooks/Office/contacts",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"users",
+						"user1",
 						"addressbooks",
 						"Office",
 						"contacts"
@@ -255,12 +273,12 @@
 			"response": []
 		},
 		{
-			"name": "5 Get all addressbooks",
+			"name": "AC5 user unque contacts",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/api/v1/addressbooks",
+					"raw": "http://localhost:8080/api/v1/users/user1/addressbooks/contacts/unique",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -269,27 +287,8 @@
 					"path": [
 						"api",
 						"v1",
-						"addressbooks"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "AC5 unque contacts",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8080/api/v1/addressbooks/contacts/unique",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"api",
-						"v1",
+						"users",
+						"user1",
 						"addressbooks",
 						"contacts",
 						"unique"

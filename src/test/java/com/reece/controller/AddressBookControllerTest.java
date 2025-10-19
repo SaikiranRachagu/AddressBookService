@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.reece.model.AddressBook;
 import com.reece.model.Contact;
 import com.reece.model.UpdateContact;
-import com.reece.service.AddressBookService;
 
+import com.reece.service.UserAddressBookService;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.Mockito;
@@ -17,7 +17,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.mockito.Mockito.*;
@@ -35,30 +37,30 @@ class AddressBookControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private AddressBookService addressBookService;
+    private UserAddressBookService addressBookService;
 
     @Autowired
     private ObjectMapper objectMapper;
 
     @Test
-    void shouldCreateAddressBook() throws Exception {
+    void shouldNotCreateAddressBookForUnknownUser() throws Exception {
 
-        mockMvc.perform(post("/api/v1/addressbooks/Reece Friends"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("Addressbook null already exists or addressbookName is null."));
+        mockMvc.perform(post("/api/v1/users/user1/addressbooks/ReeceFriends"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("user not found: user1"));
     }
 
     @Test
     void shouldAddContact() throws Exception {
         Contact contact = new Contact("Saikiran", "0001112224");
 
-        mockMvc.perform(post("/api/v1/addressbooks/Friends/contacts")
+        mockMvc.perform(post("/api/v1/users/user1/addressbooks/Friends/contacts")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(contact)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("Contact added successfully under addressbook Friends"));
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Address book or contact not found: Friends"));
 
     }
 
@@ -66,7 +68,7 @@ class AddressBookControllerTest {
     void shouldNotAddInValidPhoneNoContact() throws Exception {
         Contact contact = new Contact("Saikiran", "12345");
 
-        mockMvc.perform(post("/api/v1/addressbooks/Friends/contacts")
+        mockMvc.perform(post("/api/v1/users/user1/addressbooks/Friends/contacts")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(contact)))
                 .andExpect(status().is4xxClientError());
@@ -77,45 +79,15 @@ class AddressBookControllerTest {
         String bookName = "Friends";
         Contact contact = new Contact("Kiran", "0001112224");
 
-        Mockito.when(addressBookService.removeContact(bookName, contact)).thenReturn(true);
+        Mockito.when(addressBookService.removeContactForUser("user1", bookName, contact)).thenReturn(true);
 
-        mockMvc.perform(delete("/api/v1/addressbooks/{bookName}/contacts", bookName)
+        mockMvc.perform(delete("/api/v1/users/user1/addressbooks/{bookName}/contacts", bookName)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(contact)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Contact removed successfully from addressbook : " + bookName))
                 .andExpect(jsonPath("$.data").doesNotExist());
-    }
-
-    @Test
-    void getContactsFromAddressbook_ShouldReturnContacts() throws Exception {
-        String bookName = "Friends";
-        Set<Contact> contacts = Set.of(new Contact("Kiran", "0001112224"));
-        AddressBook book = new AddressBook(bookName);
-        book.getContacts().addAll(contacts);
-
-        when(addressBookService.getAddressBook(bookName)).thenReturn(book);
-
-        mockMvc.perform(get("/api/v1/addressbooks/{bookName}/contacts", bookName)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("Contacts fetched"))
-                .andExpect(jsonPath("$.data[0].name").value("Kiran"))
-                .andExpect(jsonPath("$.data[0].phone").value("0001112224"));
-    }
-
-    @Test
-    void getContactsFromAddressbook_WhenBookNotFound_ShouldReturnFalse() throws Exception {
-        String bookName = "UnknownBook";
-        when(addressBookService.getAddressBook(bookName)).thenReturn(null);
-
-        mockMvc.perform(get("/api/v1/addressbooks/{bookName}/contacts", bookName)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").value("addressbook 'UnknownBook' not found"));
     }
 
     @Test
@@ -127,9 +99,9 @@ class AddressBookControllerTest {
         req.setOldContact(oldC);
         req.setNewContact(newC);
 
-        when(addressBookService.updateContact("Friends", oldC, newC)).thenReturn(true);
+        when(addressBookService.updateContactForUser("user1", "Friends", oldC, newC)).thenReturn(true);
 
-        mockMvc.perform(put("/api/v1/addressbooks/Friends/contacts")
+        mockMvc.perform(put("/api/v1/users/user1/addressbooks/Friends/contacts")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
@@ -141,31 +113,17 @@ class AddressBookControllerTest {
     void getAllAddressBooks_ShouldReturnAllBooks() throws Exception {
         AddressBook book1 = new AddressBook("Friends");
         AddressBook book2 = new AddressBook("Work");
+        Map<String, AddressBook> addressBookMap = new HashMap<>();
+        addressBookMap.put("user1", book1);
+        addressBookMap.put("user1", book2);
 
-        when(addressBookService.getAllBooks()).thenReturn(List.of(book1, book2));
+        when(addressBookService.getAllBooks("user1")).thenReturn(addressBookMap);
 
-        mockMvc.perform(get("/api/v1/addressbooks")
+        mockMvc.perform(get("/api/v1/users/user1")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("All Addressbooks retrieved"))
-                .andExpect(jsonPath("$.data", hasSize(2)))
-                .andExpect(jsonPath("$.data[0].name").value("Friends"))
-                .andExpect(jsonPath("$.data[1].name").value("Work"));
-    }
-
-    @Test
-    void removeAddressbook_ShouldReturnSuccessResponse() throws Exception {
-        String bookName = "Friends";
-
-        doNothing().when(addressBookService).removeAddressBooks(bookName);
-
-        mockMvc.perform(delete("/api/v1/addressbooks/{addressbook}", bookName)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("Addressbook Friends removed successfully"))
-                .andExpect(jsonPath("$.data").doesNotExist());
+                .andExpect(jsonPath("$.message").value("All Addressbooks retrieved"));
     }
 
     @Test
@@ -175,9 +133,9 @@ class AddressBookControllerTest {
                 new Contact("Saikiran RM", "0001112244")
         );
 
-        when(addressBookService.getUniqueContactsAcrossAllBooks()).thenReturn(uniqueContacts);
+        when(addressBookService.getUniqueContactsAcrossAllBooks("user1")).thenReturn(uniqueContacts);
 
-        mockMvc.perform(get("/api/v1/addressbooks/contacts/unique")
+        mockMvc.perform(get("/api/v1/users/user1/addressbooks/contacts/unique")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
@@ -192,28 +150,82 @@ class AddressBookControllerTest {
         String bookName = "Friends";
         AddressBook newBook = new AddressBook(bookName);
 
-        when(addressBookService.createAddressBook(bookName)).thenReturn(newBook);
+        when(addressBookService.createAddressBookForUser("user1",bookName)).thenReturn(true);
 
-        mockMvc.perform(post("/api/v1/addressbooks/{addressbookName}", bookName)
+        mockMvc.perform(post("/api/v1/users/user1/addressbooks/{addressbookName}", bookName)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value(bookName + " Addressbook created"))
-                .andExpect(jsonPath("$.data.name").value(bookName));
+                .andExpect(jsonPath("$.message").value("Addressbook created successfully: Friends"));
     }
 
     @Test
     void createAddressBook_ShouldReturnAlreadyExistsMessage_WhenBookIsNull() throws Exception {
         String bookName = "Friends";
+        when(addressBookService.createAddressBookForUser("user1",bookName)).thenReturn(false);
 
-        when(addressBookService.createAddressBook(bookName)).thenReturn(null);
 
-        mockMvc.perform(post("/api/v1/addressbooks/{addressbookName}", bookName)
+        mockMvc.perform(post("/api/v1/users/user1/addressbooks/{addressbookName}", bookName)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("user not found: user1"));
+    }
+
+    @Test
+    void testGetAllAddressBooksForUser_whenContactsExist_returnsOk() throws Exception {
+        // Arrange
+        String userId = "user123";
+        String addressBookName = "Family";
+        Contact contact = new Contact("Alice", "123456");
+        Set<Contact> contacts = Set.of(contact);
+
+        when(addressBookService.getContacts(userId, addressBookName)).thenReturn(contacts);
+
+        // Act + Assert
+        mockMvc.perform(get("/api/v1/users/{userId}/addressbooks/{addressbookName}/contacts", userId, addressBookName)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("Addressbook null already exists or addressbookName is null."))
+                .andExpect(jsonPath("$.message").value("All contacts retrieved under addressbook: " + addressBookName))
+                .andExpect(jsonPath("$.data[0].name").value("Alice"))
+                .andExpect(jsonPath("$.data[0].phone").value("123456"));
+    }
+
+    @Test
+    void testGetAllAddressBooksForUser_whenContactsEmpty_returnsNotFound() throws Exception {
+        // Arrange
+        String userId = "user123";
+        String addressBookName = "EmptyBook";
+
+        when(addressBookService.getContacts(userId, addressBookName)).thenReturn(Set.of());
+
+        // Act + Assert
+        mockMvc.perform(get("/api/v1/users/{userId}/addressbooks/{addressbookName}/contacts", userId, addressBookName)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Address book or contact not found: " + addressBookName))
                 .andExpect(jsonPath("$.data").isEmpty());
+    }
+
+    @Test
+    void testRemoveAddressbooks_shouldReturnSuccessResponse() throws Exception {
+        // Arrange
+        String userId = "user123";
+        String addressBookName = "Work";
+
+        // Mocking service call
+        Mockito.when(addressBookService.removeAddressBookForUser(userId, addressBookName))
+                .thenReturn(true);
+
+        // Act + Assert
+        mockMvc.perform(delete("/api/v1/users/{userId}/addressbooks/{addressbook}", userId, addressBookName)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Addressbook " + addressBookName + " removed successfully"))
+                .andExpect(jsonPath("$.data").doesNotExist());
     }
 
 }
